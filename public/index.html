@@ -93,6 +93,7 @@
       <button class="nav-btn" onclick="showPage('empleados')" id="nav-empleados"><span>👥</span> Empleados</button>
       <button class="nav-btn" onclick="showPage('nomina')" id="nav-nomina"><span>📋</span> Nómina</button>
       <button class="nav-btn" onclick="showPage('ausencias')" id="nav-ausencias"><span>📅</span> Ausencias</button>
+      <button class="nav-btn" onclick="showPage('conexion')" id="nav-conexion"><span>🔗</span> Conexión</button>
     </nav>
     <div class="sidebar-status">
       <span class="status-dot loading" id="conn-dot"></span>
@@ -171,6 +172,64 @@
           <thead><tr><th>ID</th><th>Empleado</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Días</th><th>Estado</th></tr></thead>
           <tbody id="aus-tabla"><tr><td colspan="7" class="empty"><span class="spinner"></span> Cargando...</td></tr></tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- CONEXION -->
+    <section class="page" id="page-conexion">
+      <div class="page-header"><h2>Información de Conexión</h2><p>Detalles técnicos de la arquitectura del sistema</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(31,56,100,.10)">
+          <h3 style="font-family:Syne,sans-serif;color:#1F3864;margin-bottom:14px;font-size:15px">🗄 Base de datos</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.04em">Motor</div>
+              <div style="font-size:14px;font-weight:600;color:#1F3864;margin-top:3px">PostgreSQL (Supabase Cloud)</div>
+            </div>
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.04em">Proyecto</div>
+              <div style="font-size:14px;font-weight:600;color:#1F3864;margin-top:3px">wgxovwyafaxaznacjlyr.supabase.co</div>
+            </div>
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.04em">Tablas</div>
+              <div style="font-size:14px;font-weight:600;color:#1F3864;margin-top:3px">empleado · cargo · departamento · nomina · ausencia</div>
+            </div>
+            <div style="background:#DCFCE7;border-radius:8px;padding:12px">
+              <div style="font-size:11px;color:#166534;text-transform:uppercase;letter-spacing:.04em">Estado</div>
+              <div style="font-size:14px;font-weight:600;color:#166534;margin-top:3px" id="conn-status-page">● Verificando...</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(31,56,100,.10)">
+          <h3 style="font-family:Syne,sans-serif;color:#1F3864;margin-bottom:14px;font-size:15px">🔐 Seguridad implementada</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px;border-left:4px solid #2E75B6">
+              <div style="font-size:11px;color:#2E75B6;font-weight:600;text-transform:uppercase">Row Level Security (RLS)</div>
+              <div style="font-size:13px;color:#475569;margin-top:4px">Supabase aplica políticas de acceso a nivel de fila — equivalente a los GRANT de SQL Server</div>
+            </div>
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px;border-left:4px solid #1E7E4E">
+              <div style="font-size:11px;color:#1E7E4E;font-weight:600;text-transform:uppercase">Anon Key pública</div>
+              <div style="font-size:13px;color:#475569;margin-top:4px">La clave anon solo permite operaciones definidas — nunca expone credenciales de admin</div>
+            </div>
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px;border-left:4px solid #B45309">
+              <div style="font-size:11px;color:#B45309;font-weight:600;text-transform:uppercase">Baja lógica</div>
+              <div style="font-size:13px;color:#475569;margin-top:4px">Nunca se eliminan registros físicamente — activo=false preserva la integridad referencial</div>
+            </div>
+            <div style="background:#F0F4F9;border-radius:8px;padding:12px;border-left:4px solid #7C3AED">
+              <div style="font-size:11px;color:#7C3AED;font-weight:600;text-transform:uppercase">HTTPS + TLS</div>
+              <div style="font-size:13px;color:#475569;margin-top:4px">Toda la comunicación viaja cifrada — equivalente a encrypt=true en SQL Server connection string</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#1F3864;border-radius:12px;padding:24px;grid-column:1/-1">
+          <h3 style="font-family:Syne,sans-serif;color:#fff;margin-bottom:14px;font-size:15px">📊 Estadísticas en tiempo real</h3>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px" id="conn-stats">
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:700;color:#5BA3DC" id="cs-emp">—</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Empleados</div></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:700;color:#5BA3DC" id="cs-nom">—</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Nóminas</div></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:700;color:#5BA3DC" id="cs-aus">—</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Ausencias</div></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:700;color:#22c55e" id="cs-ping">—</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">Ping (ms)</div></div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -298,6 +357,26 @@ async function showPage(id){
   if(id==='dashboard') cargarDashboard();
   if(id==='nomina')    cargarNomina();
   if(id==='ausencias') cargarAusencias();
+  if(id==='conexion')  cargarConexion();
+}
+
+async function cargarConexion(){
+  const t0 = Date.now();
+  const [re, rn, ra] = await Promise.all([
+    db.from('empleado').select('id_empleado',{count:'exact',head:true}).eq('activo',true),
+    db.from('nomina').select('id_nomina',{count:'exact',head:true}),
+    db.from('ausencia').select('id_ausencia',{count:'exact',head:true})
+  ]);
+  const ping = Date.now()-t0;
+  const cs = document.getElementById('cs-emp');
+  if(cs){
+    document.getElementById('cs-emp').textContent  = re.count||0;
+    document.getElementById('cs-nom').textContent  = rn.count||0;
+    document.getElementById('cs-aus').textContent  = ra.count||0;
+    document.getElementById('cs-ping').textContent = ping+'ms';
+  }
+  const sp = document.getElementById('conn-status-page');
+  if(sp) sp.textContent = '● Conectado · Supabase Cloud';
 }
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
