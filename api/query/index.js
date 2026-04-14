@@ -29,7 +29,7 @@ module.exports = async function (context, req) {
       grant_type:    'password',
       resource:      'https://database.windows.net/',
       client_id:     '7f98cb04-cd1e-40df-9140-3bf7e2cea2a7', // Azure SQL público
-      username:      `${user}@${server.split('.')[0]}`,
+      username:      user,
       password:      password,
       scope:         'openid'
     });
