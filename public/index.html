@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GestNómina G1 — SQL Server 2022</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --navy:"1F3864"; --blue:#2E75B6; --accent:#5BA3DC; --bg:#F0F4F9;
-    --navy:#1F3864; --white:#fff; --dark:#111827; --muted:#64748B;
+    --navy:#1F3864; --blue:#2E75B6; --accent:#5BA3DC; --bg:#F0F4F9;
+    --white:#fff; --dark:#111827; --muted:#64748B;
     --green:#1E7E4E; --red:#C0392B; --amber:#B45309; --border:#CBD5E1;
     --shadow:0 2px 12px rgba(31,56,100,.10); --shadow-lg:0 8px 32px rgba(31,56,100,.15);
   }
@@ -18,18 +19,16 @@
   .sidebar{width:240px;background:var(--navy);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
   .sidebar-logo{padding:28px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
   .sidebar-logo h1{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;line-height:1.2}
-  .sidebar-logo span{font-size:11px;color:var(--accent);font-weight:400;letter-spacing:.04em}
+  .sidebar-logo span{font-size:11px;color:var(--accent);letter-spacing:.04em}
   .nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
   .nav-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all .2s;width:100%}
   .nav-btn:hover{background:rgba(255,255,255,.07);color:#fff}
   .nav-btn.active{background:rgba(91,163,220,.2);color:var(--accent);font-weight:500}
-  .nav-btn .icon{font-size:16px;width:22px;text-align:center}
   .sidebar-status{padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.4)}
   .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
   .status-dot.ok{background:#22c55e} .status-dot.err{background:#ef4444} .status-dot.loading{background:#f59e0b}
   .main{margin-left:240px;flex:1;padding:32px}
-  .page{display:none}
-  .page.active{display:block;animation:fadeUp .3s ease}
+  .page{display:none} .page.active{display:block;animation:fadeUp .3s ease}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   .page-header{margin-bottom:24px}
   .page-header h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--navy)}
@@ -43,8 +42,8 @@
   .search-box:focus{border-color:var(--blue)}
   .btn{padding:8px 16px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
   .btn-primary{background:var(--blue);color:#fff} .btn-primary:hover{background:var(--navy)}
-  .btn-success{background:var(--green);color:#fff} .btn-success:hover{filter:brightness(1.1)}
-  .btn-danger{background:var(--red);color:#fff} .btn-danger:hover{filter:brightness(1.1)}
+  .btn-success{background:var(--green);color:#fff}
+  .btn-danger{background:var(--red);color:#fff}
   .btn-ghost{background:var(--bg);color:var(--muted);border:1.5px solid var(--border)} .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
   .btn-amber{background:#FEF3C7;color:var(--amber);border:1.5px solid #FDE68A}
   .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -54,7 +53,7 @@
   thead th{padding:12px 16px;text-align:left;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:#fff;letter-spacing:.04em}
   tbody tr{border-bottom:1px solid var(--bg);transition:background .15s;cursor:pointer}
   tbody tr:hover{background:#F8FAFF} tbody tr.selected{background:#EBF3FB}
-  tbody td{padding:11px 16px;font-size:13.5px;color:var(--dark)}
+  tbody td{padding:11px 16px;font-size:13.5px}
   .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
   .badge-green{background:#DCFCE7;color:#166534} .badge-blue{background:#DBEAFE;color:#1E40AF}
   .badge-amber{background:#FEF3C7;color:#92400E} .badge-red{background:#FEE2E2;color:#991B1B}
@@ -64,7 +63,7 @@
   .modal{background:#fff;border-radius:16px;width:560px;max-width:95vw;box-shadow:var(--shadow-lg);overflow:hidden;animation:fadeUp .25s ease}
   .modal-header{background:var(--navy);padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
   .modal-header h3{font-family:'Syne',sans-serif;font-size:16px;color:#fff;font-weight:700}
-  .modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:22px;cursor:pointer;line-height:1}
+  .modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:22px;cursor:pointer}
   .modal-close:hover{color:#fff}
   .modal-body{padding:24px}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -80,7 +79,6 @@
   .empty{text-align:center;padding:48px;color:var(--muted);font-size:14px}
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .info-box{background:#EBF3FB;border-radius:8px;padding:14px;font-size:13px;color:#1A4971;margin-bottom:16px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -88,13 +86,13 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <h1>GestNómina</h1>
-      <span>Grupo G1 · Azure SQL Server</span>
+      <span>Grupo G1 · SQL Server 2022</span>
     </div>
     <nav class="nav">
-      <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">◼</span> Dashboard</button>
-      <button class="nav-btn" onclick="showPage('empleados')" id="nav-empleados"><span class="icon">👥</span> Empleados</button>
-      <button class="nav-btn" onclick="showPage('nomina')" id="nav-nomina"><span class="icon">📋</span> Nómina</button>
-      <button class="nav-btn" onclick="showPage('ausencias')" id="nav-ausencias"><span class="icon">📅</span> Ausencias</button>
+      <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><span>◼</span> Dashboard</button>
+      <button class="nav-btn" onclick="showPage('empleados')" id="nav-empleados"><span>👥</span> Empleados</button>
+      <button class="nav-btn" onclick="showPage('nomina')" id="nav-nomina"><span>📋</span> Nómina</button>
+      <button class="nav-btn" onclick="showPage('ausencias')" id="nav-ausencias"><span>📅</span> Ausencias</button>
     </nav>
     <div class="sidebar-status">
       <span class="status-dot loading" id="conn-dot"></span>
@@ -105,7 +103,7 @@
   <main class="main">
     <!-- DASHBOARD -->
     <section class="page active" id="page-dashboard">
-      <div class="page-header"><h2>Dashboard</h2><p>Sistema de gestión de nómina — Azure SQL Server 2022</p></div>
+      <div class="page-header"><h2>Dashboard</h2><p>Gestión de nómina — datos persistentes en la nube</p></div>
       <div class="stats">
         <div class="stat-card" style="border-color:var(--navy)"><div class="val" id="st-emp">—</div><div class="lbl">Empleados activos</div></div>
         <div class="stat-card" style="border-color:var(--green)"><div class="val" id="st-nom">—</div><div class="lbl">Nóminas registradas</div></div>
@@ -115,16 +113,16 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Empleado</th><th>Período</th><th>Devengado</th><th>Deducciones</th><th>Neto pagado</th><th>Estado</th></tr></thead>
-          <tbody id="dash-tabla"><tr><td colspan="6" class="empty"><span class="spinner"></span> Cargando datos desde Azure SQL...</td></tr></tbody>
+          <tbody id="dash-tabla"><tr><td colspan="6" class="empty"><span class="spinner"></span> Cargando...</td></tr></tbody>
         </table>
       </div>
     </section>
 
     <!-- EMPLEADOS -->
     <section class="page" id="page-empleados">
-      <div class="page-header"><h2>Gestión de Empleados</h2><p>CRUD con sentencias preparadas — prevención SQL Injection</p></div>
+      <div class="page-header"><h2>Gestión de Empleados</h2><p>CRUD completo con persistencia en la nube</p></div>
       <div class="toolbar">
-        <input class="search-box" type="text" id="emp-search" placeholder="🔍 Buscar por nombre..." oninput="filtrarEmpleados()">
+        <input class="search-box" type="text" id="emp-search" placeholder="🔍 Buscar..." oninput="filtrarEmpleados()">
         <button class="btn btn-success" onclick="abrirModalEmp()">+ Nuevo</button>
         <button class="btn btn-primary" onclick="editarEmp()">✏ Editar</button>
         <button class="btn btn-danger"  onclick="bajaEmp()">✖ Dar de baja</button>
@@ -140,13 +138,11 @@
 
     <!-- NÓMINA -->
     <section class="page" id="page-nomina">
-      <div class="page-header"><h2>Gestión de Nómina</h2><p>Registro, aprobación y pago de nóminas</p></div>
+      <div class="page-header"><h2>Gestión de Nómina</h2><p>Registro, aprobación y pago</p></div>
       <div class="toolbar">
         <select class="search-box" id="nom-estado" onchange="cargarNomina()" style="width:160px">
-          <option value="">Todos los estados</option>
-          <option value="BORRADOR">Borrador</option>
-          <option value="APROBADA">Aprobada</option>
-          <option value="PAGADA">Pagada</option>
+          <option value="">Todos</option><option value="BORRADOR">Borrador</option>
+          <option value="APROBADA">Aprobada</option><option value="PAGADA">Pagada</option>
         </select>
         <button class="btn btn-success" onclick="abrirModalNomina()">+ Nueva</button>
         <button class="btn btn-primary" onclick="cambiarEstadoNomina('APROBADA')">✔ Aprobar</button>
@@ -191,7 +187,7 @@
         <div class="form-group"><label>Primer apellido *</label><input id="e-apellido" type="text"></div>
         <div class="form-group"><label>N° identificación *</label><input id="e-nid" type="text"></div>
         <div class="form-group"><label>Tipo ID</label><select id="e-tipoid"><option>CC</option><option>CE</option><option>PAS</option></select></div>
-        <div class="form-group"><label>Fecha nacimiento</label><input id="e-nacimiento" type="date"></div>
+        <div class="form-group"><label>Fecha nacimiento</label><input id="e-nacimiento" type="date" value="1995-01-01"></div>
         <div class="form-group"><label>Género</label><select id="e-genero"><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select></div>
         <div class="form-group full"><label>Correo corporativo *</label><input id="e-email" type="email"></div>
         <div class="form-group"><label>Teléfono</label><input id="e-tel" type="text"></div>
@@ -222,9 +218,9 @@
         </div>
         <div class="form-group"><label>Salario base</label><input id="n-salario" type="number" oninput="calcNomina()"></div>
         <div class="form-group"><label>Días trabajados</label><input id="n-dias" type="number" value="30" min="1" max="30" oninput="calcNomina()"></div>
-        <div class="form-group"><label>Total devengado (auto)</label><input id="n-devengado" type="number" readonly style="background:var(--bg)"></div>
-        <div class="form-group"><label>Total deducciones (auto)</label><input id="n-deducciones" type="number" readonly style="background:var(--bg)"></div>
-        <div class="form-group full"><label>Neto pagado (auto)</label><input id="n-neto" type="number" readonly style="background:var(--bg);font-weight:700"></div>
+        <div class="form-group"><label>Total devengado</label><input id="n-devengado" type="number" readonly style="background:var(--bg)"></div>
+        <div class="form-group"><label>Total deducciones</label><input id="n-deducciones" type="number" readonly style="background:var(--bg)"></div>
+        <div class="form-group full"><label>Neto pagado</label><input id="n-neto" type="number" readonly style="background:var(--bg);font-weight:700"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -257,43 +253,39 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────
-// En producción Azure Static Web Apps, /api/query/* apunta a las Azure Functions
-const API = '/api/query';
+// ── Supabase init ──────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const db = createClient(
+  'https://wgxovwyafaxaznacjlyr.supabase.co',
+  'sb_publishable_Zf9mBXjqMcPvqtJ1MzPKzw_cfcVMf78'
+);
 
 // ── Estado ─────────────────────────────────────────────────────────────────
-let catalogos = { departamentos:[], cargos:[], empleados:[] };
 let empData=[], nomData=[], ausData=[];
+let deptos=[], cargos=[];
 let selEmp=null, selNom=null, selAus=null;
 let modoEdicion=false;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = n => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(n||0);
-const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO') : '—';
-function badge(e){const m={PAGADA:'green',APROBADA:'blue',BORRADOR:'amber',ANULADA:'red',PENDIENTE:'amber',RECHAZADA:'red',DISFRUTADA:'gray',ACTIVO:'green',INACTIVO:'red'};return `<span class="badge badge-${m[e]||'gray'}">${e}</span>`}
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('es-CO') : '—';
 
-function toast(msg,tipo='info'){
+function badge(e){
+  const m={PAGADA:'green',APROBADA:'blue',BORRADOR:'amber',ANULADA:'red',
+           PENDIENTE:'amber',RECHAZADA:'red',DISFRUTADA:'gray'};
+  return `<span class="badge badge-${m[e]||'gray'}">${e}</span>`;
+}
+
+function toast(msg, tipo='info'){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`toast ${tipo} show`;
-  setTimeout(()=>t.classList.remove('show'),3000);
+  setTimeout(()=>t.classList.remove('show'),3200);
 }
 
-function setLoading(btnId, loading){
-  const b=document.getElementById(btnId);
-  if(!b)return;
-  b.disabled=loading;
-  b.innerHTML = loading ? '<span class="spinner"></span> Guardando...' : '💾 Guardar';
-}
-
-async function api(action, method='GET', body=null, params=''){
-  const url = `${API}/${action}${params}`;
-  const opts = { method, headers:{'Content-Type':'application/json'} };
-  if(body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || 'Error en la API');
-  return data;
-}
+function cerrarModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
 
 // ── Navegación ──────────────────────────────────────────────────────────────
 function showPage(id){
@@ -307,273 +299,311 @@ function showPage(id){
   if(id==='ausencias') cargarAusencias();
 }
 
-// ── Catálogos ───────────────────────────────────────────────────────────────
+// ── Catálogos ────────────────────────────────────────────────────────────────
 async function cargarCatalogos(){
-  try {
-    catalogos = await api('catalogos');
-    document.getElementById('conn-dot').className = 'status-dot ok';
-    document.getElementById('conn-label').textContent = 'Azure SQL conectado';
-  } catch(e) {
-    document.getElementById('conn-dot').className = 'status-dot err';
-    document.getElementById('conn-label').textContent = 'Sin conexión';
-  }
+  const [rd, rc] = await Promise.all([
+    db.from('departamento').select('id_departamento,nombre_departamento').eq('activo',true),
+    db.from('cargo').select('id_cargo,nombre_cargo')
+  ]);
+  deptos = rd.data || [];
+  cargos = rc.data || [];
 }
 
-// ── Dashboard ───────────────────────────────────────────────────────────────
+// ── Dashboard ────────────────────────────────────────────────────────────────
 async function cargarDashboard(){
-  try {
-    const [emps, noms, aus] = await Promise.all([
-      api('empleados'), api('nominas'), api('ausencias')
-    ]);
-    empData=emps; nomData=noms; ausData=aus;
-    document.getElementById('st-emp').textContent  = emps.length;
-    document.getElementById('st-nom').textContent  = noms.length;
-    document.getElementById('st-aus').textContent  = aus.filter(a=>a.estado==='PENDIENTE').length;
-    document.getElementById('st-neto').textContent = fmt(noms.reduce((s,n)=>s+n.neto_pagado,0));
-    document.getElementById('dash-tabla').innerHTML = noms.slice(0,10).map(n=>`
-      <tr><td>${n.empleado}</td><td>${n.anio}/${String(n.mes).padStart(2,'0')}</td>
-      <td>${fmt(n.total_devengado)}</td><td>${fmt(n.total_deducciones)}</td>
-      <td><strong>${fmt(n.neto_pagado)}</strong></td><td>${badge(n.estado)}</td></tr>`).join('') ||
-      '<tr><td colspan="6" class="empty">Sin nóminas registradas</td></tr>';
-  } catch(e){ toast('Error cargando dashboard: '+e.message,'error'); }
+  const [re, rn, ra] = await Promise.all([
+    db.from('empleado').select('id_empleado').eq('activo',true),
+    db.from('nomina').select('id_nomina,id_empleado,anio,mes,total_devengado,total_deducciones,neto_pagado,estado,empleado(primer_nombre,primer_apellido)').order('anio',{ascending:false}).order('mes',{ascending:false}).limit(10),
+    db.from('ausencia').select('id_ausencia').eq('estado','PENDIENTE')
+  ]);
+
+  document.getElementById('st-emp').textContent  = re.data?.length || 0;
+  document.getElementById('st-nom').textContent  = rn.data?.length || 0;
+  document.getElementById('st-aus').textContent  = ra.data?.length || 0;
+
+  const noms = rn.data || [];
+  const totalNeto = noms.reduce((s,n)=>s+(n.neto_pagado||0),0);
+  document.getElementById('st-neto').textContent = fmt(totalNeto);
+
+  document.getElementById('dash-tabla').innerHTML = noms.length
+    ? noms.map(n=>`<tr>
+        <td>${n.empleado?.primer_nombre} ${n.empleado?.primer_apellido}</td>
+        <td>${n.anio}/${String(n.mes).padStart(2,'0')}</td>
+        <td>${fmt(n.total_devengado)}</td><td>${fmt(n.total_deducciones)}</td>
+        <td><strong>${fmt(n.neto_pagado)}</strong></td><td>${badge(n.estado)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">Sin nóminas registradas</td></tr>';
+
+  document.getElementById('conn-dot').className = 'status-dot ok';
+  document.getElementById('conn-label').textContent = 'Conectado · Supabase';
 }
 
-// ── Empleados ───────────────────────────────────────────────────────────────
+// ── Empleados ────────────────────────────────────────────────────────────────
 async function cargarEmpleados(){
-  try {
-    empData = await api('empleados');
-    renderEmpleados(empData);
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  const {data, error} = await db.from('empleado')
+    .select('*,departamento(nombre_departamento),cargo(nombre_cargo)')
+    .eq('activo',true).order('primer_apellido');
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  empData = data || [];
+  renderEmpleados(empData);
 }
 
 function renderEmpleados(lista){
   document.getElementById('emp-tabla').innerHTML = lista.length
     ? lista.map(e=>`<tr onclick="selRow('emp',${e.id_empleado},this)" class="${selEmp===e.id_empleado?'selected':''}">
-        <td>${e.id_empleado}</td><td><strong>${e.nombre}</strong></td><td>${e.nid}</td>
-        <td>${e.depto}</td><td>${e.cargo}</td><td>${fmt(e.salario)}</td><td>${e.tipo_contrato}</td>
+        <td>${e.id_empleado}</td>
+        <td><strong>${e.primer_nombre} ${e.primer_apellido}</strong></td>
+        <td>${e.num_identificacion}</td>
+        <td>${e.departamento?.nombre_departamento||'—'}</td>
+        <td>${e.cargo?.nombre_cargo||'—'}</td>
+        <td>${fmt(e.salario_actual)}</td>
+        <td>${e.tipo_contrato}</td>
       </tr>`).join('')
     : '<tr><td colspan="7" class="empty">Sin empleados activos</td></tr>';
 }
 
 function filtrarEmpleados(){
-  const q=document.getElementById('emp-search').value.toLowerCase();
-  renderEmpleados(empData.filter(e=>e.nombre.toLowerCase().includes(q)));
+  const q = document.getElementById('emp-search').value.toLowerCase();
+  renderEmpleados(empData.filter(e=>
+    `${e.primer_nombre} ${e.primer_apellido}`.toLowerCase().includes(q)
+  ));
 }
 
 function abrirModalEmp(modo='nuevo'){
   modoEdicion = modo==='editar';
   document.getElementById('modal-emp-title').textContent = modoEdicion ? 'Editar empleado' : 'Nuevo empleado';
-  document.getElementById('e-depto').innerHTML = catalogos.departamentos.map(d=>`<option value="${d.id}">${d.nombre}</option>`).join('');
-  document.getElementById('e-cargo').innerHTML = catalogos.cargos.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  document.getElementById('e-depto').innerHTML = deptos.map(d=>`<option value="${d.id_departamento}">${d.nombre_departamento}</option>`).join('');
+  document.getElementById('e-cargo').innerHTML = cargos.map(c=>`<option value="${c.id_cargo}">${c.nombre_cargo}</option>`).join('');
 
   if(modoEdicion && selEmp){
     const e = empData.find(x=>x.id_empleado===selEmp);
     if(e){
-      document.getElementById('e-id').value = e.id_empleado;
-      document.getElementById('e-nombre').value  = e.nombre.split(' ')[0]||'';
-      document.getElementById('e-apellido').value = e.nombre.split(' ').slice(1).join(' ')||'';
-      document.getElementById('e-email').value   = e.email||'';
-      document.getElementById('e-tel').value     = e.telefono||'';
-      document.getElementById('e-salario').value = e.salario;
-      document.getElementById('e-contrato').value= e.tipo_contrato;
-      const di = Array.from(document.getElementById('e-depto').options).findIndex(o=>o.text===e.depto);
+      document.getElementById('e-id').value          = e.id_empleado;
+      document.getElementById('e-nombre').value      = e.primer_nombre;
+      document.getElementById('e-apellido').value    = e.primer_apellido;
+      document.getElementById('e-nid').value         = e.num_identificacion;
+      document.getElementById('e-email').value       = e.email_corporativo;
+      document.getElementById('e-tel').value         = e.telefono||'';
+      document.getElementById('e-salario').value     = e.salario_actual;
+      document.getElementById('e-contrato').value    = e.tipo_contrato;
+      document.getElementById('e-nacimiento').value  = e.fecha_nacimiento;
+      document.getElementById('e-contratacion').value= e.fecha_contratacion;
+      document.getElementById('e-genero').value      = e.genero;
+      document.getElementById('e-tipoid').value      = e.tipo_identificacion;
+      const di = Array.from(document.getElementById('e-depto').options).findIndex(o=>parseInt(o.value)===e.id_departamento);
       if(di>=0) document.getElementById('e-depto').selectedIndex=di;
-      const ci = Array.from(document.getElementById('e-cargo').options).findIndex(o=>o.text===e.cargo);
+      const ci = Array.from(document.getElementById('e-cargo').options).findIndex(o=>parseInt(o.value)===e.id_cargo);
       if(ci>=0) document.getElementById('e-cargo').selectedIndex=ci;
     }
   } else {
-    ['e-id','e-nombre','e-apellido','e-nid','e-email','e-tel','e-salario'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('e-id').value = '';
+    ['e-nombre','e-apellido','e-nid','e-email','e-tel','e-salario'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('e-contratacion').value = new Date().toISOString().split('T')[0];
-    document.getElementById('e-nacimiento').value = '1995-01-01';
   }
-  document.getElementById('btn-guardar-emp').innerHTML = '💾 Guardar';
   document.getElementById('modal-emp').classList.add('open');
 }
 
 function editarEmp(){
-  if(!selEmp){toast('Selecciona un empleado','error');return;}
+  if(!selEmp){ toast('Selecciona un empleado','error'); return; }
   abrirModalEmp('editar');
 }
 
 async function guardarEmpleado(){
   const nombre   = document.getElementById('e-nombre').value.trim();
   const apellido = document.getElementById('e-apellido').value.trim();
-  if(!nombre||!apellido){toast('Nombre y apellido son obligatorios','error');return;}
+  const nid      = document.getElementById('e-nid').value.trim();
+  const email    = document.getElementById('e-email').value.trim();
+  const salario  = parseFloat(document.getElementById('e-salario').value);
+  if(!nombre||!apellido||!email){ toast('Completa los campos obligatorios','error'); return; }
 
-  const body = {
-    id_empleado:       document.getElementById('e-id').value,
-    primer_nombre:     nombre,
-    primer_apellido:   apellido,
-    num_identificacion:document.getElementById('e-nid').value.trim(),
+  const payload = {
+    primer_nombre:      nombre,
+    primer_apellido:    apellido,
+    num_identificacion: nid,
     tipo_identificacion:document.getElementById('e-tipoid').value,
-    fecha_nacimiento:  document.getElementById('e-nacimiento').value,
-    genero:            document.getElementById('e-genero').value,
-    email_corporativo: document.getElementById('e-email').value.trim(),
-    telefono:          document.getElementById('e-tel').value.trim()||null,
-    fecha_contratacion:document.getElementById('e-contratacion').value,
-    tipo_contrato:     document.getElementById('e-contrato').value,
-    salario_actual:    document.getElementById('e-salario').value,
-    id_departamento:   document.getElementById('e-depto').value,
-    id_cargo:          document.getElementById('e-cargo').value,
+    fecha_nacimiento:   document.getElementById('e-nacimiento').value,
+    genero:             document.getElementById('e-genero').value,
+    email_corporativo:  email,
+    telefono:           document.getElementById('e-tel').value||null,
+    fecha_contratacion: document.getElementById('e-contratacion').value,
+    tipo_contrato:      document.getElementById('e-contrato').value,
+    salario_actual:     salario,
+    id_departamento:    parseInt(document.getElementById('e-depto').value),
+    id_cargo:           parseInt(document.getElementById('e-cargo').value),
   };
 
-  setLoading('btn-guardar-emp', true);
-  try {
-    if(modoEdicion) await api('empleados','PUT',body);
-    else            await api('empleados','POST',body);
-    toast(`✔ Empleado ${modoEdicion?'actualizado':'creado'} correctamente`,'success');
-    cerrarModal('modal-emp');
-    await Promise.all([cargarEmpleados(), cargarCatalogos()]);
-  } catch(e){ toast('Error: '+e.message,'error'); }
-  setLoading('btn-guardar-emp', false);
+  document.getElementById('btn-guardar-emp').disabled = true;
+  let error;
+  if(modoEdicion && selEmp){
+    ({error} = await db.from('empleado').update(payload).eq('id_empleado', selEmp));
+  } else {
+    ({error} = await db.from('empleado').insert(payload));
+  }
+  document.getElementById('btn-guardar-emp').disabled = false;
+
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast(`✔ Empleado ${modoEdicion?'actualizado':'creado'}`,'success');
+  cerrarModal('modal-emp');
+  selEmp = null;
+  await Promise.all([cargarEmpleados(), cargarCatalogos()]);
 }
 
 async function bajaEmp(){
-  if(!selEmp){toast('Selecciona un empleado','error');return;}
-  const e=empData.find(x=>x.id_empleado===selEmp);
-  if(!confirm(`¿Dar de baja a ${e.nombre}? (baja lógica — activo=0)`))return;
-  try {
-    await api('empleados','DELETE',null,`?id=${selEmp}`);
-    toast(`✔ ${e.nombre} dado de baja`,'info');
-    selEmp=null;
-    await cargarEmpleados();
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  if(!selEmp){ toast('Selecciona un empleado','error'); return; }
+  const e = empData.find(x=>x.id_empleado===selEmp);
+  if(!confirm(`¿Dar de baja a ${e.primer_nombre} ${e.primer_apellido}?\n(Baja lógica — activo = false)`)) return;
+  const {error} = await db.from('empleado').update({activo:false}).eq('id_empleado',selEmp);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast(`✔ ${e.primer_nombre} dado de baja`,'info');
+  selEmp=null; cargarEmpleados();
 }
 
-// ── Nómina ──────────────────────────────────────────────────────────────────
+// ── Nómina ───────────────────────────────────────────────────────────────────
 async function cargarNomina(){
-  const estado=document.getElementById('nom-estado').value;
-  try {
-    nomData = await api('nominas','GET',null,estado?`?estado=${estado}`:'');
-    document.getElementById('nom-tabla').innerHTML = nomData.length
-      ? nomData.map(n=>`<tr onclick="selRow('nom',${n.id_nomina},this)" class="${selNom===n.id_nomina?'selected':''}">
-          <td>${n.id_nomina}</td><td>${n.empleado}</td>
-          <td>${n.anio}/${String(n.mes).padStart(2,'0')}</td>
-          <td>${fmt(n.salario_base)}</td><td>${n.dias_trabajados}</td>
-          <td>${fmt(n.total_devengado)}</td><td>${fmt(n.total_deducciones)}</td>
-          <td><strong>${fmt(n.neto_pagado)}</strong></td><td>${badge(n.estado)}</td>
-        </tr>`).join('')
-      : '<tr><td colspan="9" class="empty">Sin nóminas</td></tr>';
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  const estado = document.getElementById('nom-estado').value;
+  let q = db.from('nomina')
+    .select('*,empleado(primer_nombre,primer_apellido)')
+    .order('anio',{ascending:false}).order('mes',{ascending:false});
+  if(estado) q = q.eq('estado', estado);
+  const {data, error} = await q;
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  nomData = data || [];
+  document.getElementById('nom-tabla').innerHTML = nomData.length
+    ? nomData.map(n=>`<tr onclick="selRow('nom',${n.id_nomina},this)" class="${selNom===n.id_nomina?'selected':''}">
+        <td>${n.id_nomina}</td>
+        <td>${n.empleado?.primer_nombre} ${n.empleado?.primer_apellido}</td>
+        <td>${n.anio}/${String(n.mes).padStart(2,'0')}</td>
+        <td>${fmt(n.salario_base)}</td><td>${n.dias_trabajados}</td>
+        <td>${fmt(n.total_devengado)}</td><td>${fmt(n.total_deducciones)}</td>
+        <td><strong>${fmt(n.neto_pagado)}</strong></td><td>${badge(n.estado)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="9" class="empty">Sin nóminas</td></tr>';
 }
 
-function abrirModalNomina(){
-  document.getElementById('n-emp').innerHTML = catalogos.empleados.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+async function abrirModalNomina(){
+  await cargarEmpleados();
+  document.getElementById('n-emp').innerHTML = empData.map(e=>`<option value="${e.id_empleado}">${e.primer_nombre} ${e.primer_apellido}</option>`).join('');
   autoSalario();
   document.getElementById('modal-nom').classList.add('open');
 }
 
 function autoSalario(){
-  const empId=parseInt(document.getElementById('n-emp').value);
-  const emp=empData.find(e=>e.id_empleado===empId);
-  if(emp){ document.getElementById('n-salario').value=emp.salario; calcNomina(); }
+  const id = parseInt(document.getElementById('n-emp').value);
+  const e  = empData.find(x=>x.id_empleado===id);
+  if(e){ document.getElementById('n-salario').value=e.salario_actual; calcNomina(); }
 }
 
 function calcNomina(){
-  const sal=parseFloat(document.getElementById('n-salario').value)||0;
-  const dias=parseInt(document.getElementById('n-dias').value)||30;
-  const base=Math.round(sal*dias/30);
-  const dev=Math.round(base*1.075);
-  const ded=Math.round(base*0.18);
-  document.getElementById('n-devengado').value=dev;
-  document.getElementById('n-deducciones').value=ded;
-  document.getElementById('n-neto').value=dev-ded;
+  const sal  = parseFloat(document.getElementById('n-salario').value)||0;
+  const dias = parseInt(document.getElementById('n-dias').value)||30;
+  const base = Math.round(sal*dias/30);
+  const dev  = Math.round(base*1.075);
+  const ded  = Math.round(base*0.18);
+  document.getElementById('n-devengado').value  = dev;
+  document.getElementById('n-deducciones').value= ded;
+  document.getElementById('n-neto').value       = dev-ded;
 }
 
 async function guardarNomina(){
-  const body={
-    id_empleado:      document.getElementById('n-emp').value,
-    anio:             document.getElementById('n-anio').value,
-    mes:              document.getElementById('n-mes').value,
-    salario_base:     document.getElementById('n-salario').value,
-    dias_trabajados:  document.getElementById('n-dias').value,
-    total_devengado:  document.getElementById('n-devengado').value,
-    total_deducciones:document.getElementById('n-deducciones').value,
-    neto_pagado:      document.getElementById('n-neto').value,
-  };
-  setLoading('btn-guardar-nom',true);
-  try {
-    await api('nominas','POST',body);
-    toast('✔ Nómina creada','success');
-    cerrarModal('modal-nom'); cargarNomina();
-  } catch(e){ toast('Error: '+e.message,'error'); }
-  setLoading('btn-guardar-nom',false);
+  document.getElementById('btn-guardar-nom').disabled=true;
+  const {error} = await db.from('nomina').insert({
+    id_empleado:      parseInt(document.getElementById('n-emp').value),
+    anio:             parseInt(document.getElementById('n-anio').value),
+    mes:              parseInt(document.getElementById('n-mes').value),
+    salario_base:     parseFloat(document.getElementById('n-salario').value),
+    dias_trabajados:  parseInt(document.getElementById('n-dias').value)||30,
+    total_devengado:  parseFloat(document.getElementById('n-devengado').value)||0,
+    total_deducciones:parseFloat(document.getElementById('n-deducciones').value)||0,
+    neto_pagado:      parseFloat(document.getElementById('n-neto').value)||0,
+    estado:           'BORRADOR'
+  });
+  document.getElementById('btn-guardar-nom').disabled=false;
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✔ Nómina creada','success');
+  cerrarModal('modal-nom'); cargarNomina();
 }
 
 async function cambiarEstadoNomina(estado){
-  if(!selNom){toast('Selecciona una nómina','error');return;}
-  const n=nomData.find(x=>x.id_nomina===selNom);
-  if(estado==='APROBADA'&&n.estado!=='BORRADOR'){toast('Solo se aprueban nóminas en BORRADOR','error');return;}
-  if(estado==='PAGADA'&&n.estado!=='APROBADA'){toast('Solo se pagan nóminas APROBADAS','error');return;}
-  try {
-    await api('nominas-estado','PUT',{id_nomina:selNom,estado});
-    toast(`✔ Nómina marcada como ${estado}`,'success');
-    selNom=null; cargarNomina();
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  if(!selNom){ toast('Selecciona una nómina','error'); return; }
+  const n = nomData.find(x=>x.id_nomina===selNom);
+  if(estado==='APROBADA'&&n.estado!=='BORRADOR'){ toast('Solo se aprueban nóminas en BORRADOR','error'); return; }
+  if(estado==='PAGADA'&&n.estado!=='APROBADA'){   toast('Solo se pagan nóminas APROBADAS','error');  return; }
+  const upd = estado==='PAGADA'
+    ? {estado, fecha_pago: new Date().toISOString().split('T')[0]}
+    : {estado};
+  const {error} = await db.from('nomina').update(upd).eq('id_nomina',selNom);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast(`✔ Nómina ${estado.toLowerCase()}`,'success');
+  selNom=null; cargarNomina();
 }
 
-// ── Ausencias ───────────────────────────────────────────────────────────────
+// ── Ausencias ────────────────────────────────────────────────────────────────
 async function cargarAusencias(){
-  try {
-    ausData = await api('ausencias');
-    document.getElementById('aus-tabla').innerHTML = ausData.length
-      ? ausData.map(a=>`<tr onclick="selRow('aus',${a.id_ausencia},this)" class="${selAus===a.id_ausencia?'selected':''}">
-          <td>${a.id_ausencia}</td><td>${a.empleado}</td><td>${a.tipo_ausencia}</td>
+  const {data, error} = await db.from('ausencia')
+    .select('*,empleado(primer_nombre,primer_apellido)')
+    .order('fecha_inicio',{ascending:false});
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  ausData = data || [];
+  document.getElementById('aus-tabla').innerHTML = ausData.length
+    ? ausData.map(a=>{
+        const dias = Math.round((new Date(a.fecha_fin)-new Date(a.fecha_inicio))/(86400000))+1;
+        return `<tr onclick="selRow('aus',${a.id_ausencia},this)" class="${selAus===a.id_ausencia?'selected':''}">
+          <td>${a.id_ausencia}</td>
+          <td>${a.empleado?.primer_nombre} ${a.empleado?.primer_apellido}</td>
+          <td>${a.tipo_ausencia}</td>
           <td>${fmtDate(a.fecha_inicio)}</td><td>${fmtDate(a.fecha_fin)}</td>
-          <td>${a.dias}</td><td>${badge(a.estado)}</td>
-        </tr>`).join('')
-      : '<tr><td colspan="7" class="empty">Sin ausencias</td></tr>';
-  } catch(e){ toast('Error: '+e.message,'error'); }
+          <td>${dias}</td><td>${badge(a.estado)}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="7" class="empty">Sin ausencias</td></tr>';
 }
 
-function abrirModalAusencia(){
-  document.getElementById('a-emp').innerHTML = catalogos.empleados.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+async function abrirModalAusencia(){
+  await cargarEmpleados();
+  document.getElementById('a-emp').innerHTML = empData.map(e=>`<option value="${e.id_empleado}">${e.primer_nombre} ${e.primer_apellido}</option>`).join('');
   document.getElementById('a-inicio').value = new Date().toISOString().split('T')[0];
   document.getElementById('modal-aus').classList.add('open');
 }
 
 async function guardarAusencia(){
-  const inicio=document.getElementById('a-inicio').value;
-  const fin=document.getElementById('a-fin').value;
-  if(!inicio||!fin){toast('Las fechas son obligatorias','error');return;}
-  if(fin<inicio){toast('La fecha fin no puede ser anterior al inicio','error');return;}
-  const body={
-    id_empleado:  document.getElementById('a-emp').value,
+  const inicio = document.getElementById('a-inicio').value;
+  const fin    = document.getElementById('a-fin').value;
+  if(!inicio||!fin){ toast('Las fechas son obligatorias','error'); return; }
+  if(fin<inicio){    toast('Fecha fin no puede ser anterior al inicio','error'); return; }
+  document.getElementById('btn-guardar-aus').disabled=true;
+  const {error} = await db.from('ausencia').insert({
+    id_empleado:  parseInt(document.getElementById('a-emp').value),
     tipo_ausencia:document.getElementById('a-tipo').value,
-    fecha_inicio: inicio, fecha_fin: fin,
+    fecha_inicio: inicio,
+    fecha_fin:    fin,
+    estado:       'PENDIENTE',
     observaciones:document.getElementById('a-obs').value||null
-  };
-  setLoading('btn-guardar-aus',true);
-  try {
-    await api('ausencias','POST',body);
-    toast('✔ Ausencia registrada','success');
-    cerrarModal('modal-aus'); cargarAusencias();
-  } catch(e){ toast('Error: '+e.message,'error'); }
-  setLoading('btn-guardar-aus',false);
+  });
+  document.getElementById('btn-guardar-aus').disabled=false;
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✔ Ausencia registrada','success');
+  cerrarModal('modal-aus'); cargarAusencias();
 }
 
 async function cambiarEstadoAusencia(estado){
-  if(!selAus){toast('Selecciona una ausencia','error');return;}
-  try {
-    await api('ausencias-estado','PUT',{id_ausencia:selAus,estado});
-    toast(`✔ Ausencia ${estado.toLowerCase()}`,'success');
-    selAus=null; cargarAusencias();
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  if(!selAus){ toast('Selecciona una ausencia','error'); return; }
+  const {error} = await db.from('ausencia').update({estado}).eq('id_ausencia',selAus);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast(`✔ Ausencia ${estado.toLowerCase()}`,'success');
+  selAus=null; cargarAusencias();
 }
 
-// ── Utils ───────────────────────────────────────────────────────────────────
+// ── Utils ────────────────────────────────────────────────────────────────────
 function selRow(tipo,id,tr){
-  if(tipo==='emp'){selEmp=id;document.querySelectorAll('#emp-tabla tr').forEach(r=>r.classList.remove('selected'));}
-  if(tipo==='nom'){selNom=id;document.querySelectorAll('#nom-tabla tr').forEach(r=>r.classList.remove('selected'));}
-  if(tipo==='aus'){selAus=id;document.querySelectorAll('#aus-tabla tr').forEach(r=>r.classList.remove('selected'));}
+  const tabla = tipo==='emp'?'emp-tabla':tipo==='nom'?'nom-tabla':'aus-tabla';
+  document.querySelectorAll(`#${tabla} tr`).forEach(r=>r.classList.remove('selected'));
   tr.classList.add('selected');
+  if(tipo==='emp') selEmp=id;
+  if(tipo==='nom') selNom=id;
+  if(tipo==='aus') selAus=id;
 }
-function cerrarModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(m=>{
-  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
-});
 
-// ── Init ────────────────────────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────────────────────────
 (async()=>{
   await cargarCatalogos();
   await cargarDashboard();
